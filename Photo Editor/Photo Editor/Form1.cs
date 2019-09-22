@@ -138,14 +138,17 @@ namespace Photo_Editor
         }
         private void DetailsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //Sets the listView to the proper size and handles the check marks on the menuStrip
             listView1.View = View.Details;
             detailsToolStripMenuItem.Checked = true;
             smallToolStripMenuItem.Checked = false;
             largeToolStripMenuItem.Checked = false;
+            //dkhjsfdbjfdskn
         }
 
         private void SmallToolStripMenuItem_Click(object sender, EventArgs e)
-        {        
+        {
+            //Sets the listView to the proper size and handles the check marks on the menuStrip
             listView1.View = View.SmallIcon;
             detailsToolStripMenuItem.Checked = false;
             smallToolStripMenuItem.Checked = true;
@@ -154,6 +157,7 @@ namespace Photo_Editor
 
         private void LargeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //Sets the listView to the proper size and handles the check marks on the menuStrip
             listView1.View = View.LargeIcon;
             detailsToolStripMenuItem.Checked = false;
             smallToolStripMenuItem.Checked = false;
