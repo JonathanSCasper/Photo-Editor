@@ -128,15 +128,16 @@ namespace Photo_Editor
                     });
                     //Increment i for image index
                     i++;
+                    progressBar1.Visible = true;
                     Invoke((Action)delegate ()
                     {
-
                         listView1.SmallImageList = imageListSmall;
                         listView1.LargeImageList = imageListLarge;
                     });
                     if (cancellationTokenSource.IsCancellationRequested)
                         break;
                 }
+                progressBar1.Visible = false;
             });
         }
         private void DetailsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -181,7 +182,7 @@ namespace Photo_Editor
         {
             if(listView1.FocusedItem != null)
             {
-                //Code by Mahmoud Al-Qudsi and zwcloud -https://stackoverflow.com/questions/13680415/how-to-open-explorer-with-a-specific-file-selected
+                //Code by Mahmoud Al-Qudsi and zwcloud - https://stackoverflow.com/questions/13680415/how-to-open-explorer-with-a-specific-file-selected
                 string filePath = listView1.FocusedItem.Tag.ToString();
                 filePath = System.IO.Path.GetFullPath(filePath);
                 System.Diagnostics.Process.Start("explorer.exe", string.Format("/select,\"{0}\"", filePath));            
