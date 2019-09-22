@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Jonathan Casper and Riley Judd's Photo Editor")]
 [assembly: AssemblyDescription("This program finds all JPEG photos in the user's Pictures folder and displays them in a window. The user can change the viewing size of the photos, as well as edit each photo individually by changing the brightness, color, and even inverting the image!")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Completed first two Extra Credit options")]
 [assembly: AssemblyProduct("Photo Editor")]
 [assembly: AssemblyCopyright("by Jonathan Casper and Riley Judd")]
 [assembly: AssemblyTrademark("")]

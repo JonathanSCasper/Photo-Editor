@@ -207,6 +207,5 @@ namespace Photo_Editor
                 treeView1.ExpandAll();
             }
         }
-
     }
 }
