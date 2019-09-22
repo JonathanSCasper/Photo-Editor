@@ -21,11 +21,9 @@ namespace Photo_Editor
 
             PopulateTreeView(rootFolder);
             treeView1.ExpandAll();
+            
 
             cancellationTokenSource = new CancellationTokenSource();
-
-            this.treeView1.NodeMouseClick +=
-            new TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
         }
 
         //Edited code from https://docs.microsoft.com/en-us/dotnet/framework/winforms/controls/creating-an-explorer-style-interface-with-the-listview-and-treeview
@@ -64,8 +62,7 @@ namespace Photo_Editor
             }
         }
 
-        async void treeView1_NodeMouseClick(object sender,
-        TreeNodeMouseClickEventArgs e)
+        async private void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             //The NodeMouseClick handler isn't a function, so I had to call it once with the cancellationTokenSource.Cancel()
             //to stop the current process, than reset the cancellationTokenSource, and call DoSomething again...
@@ -76,7 +73,7 @@ namespace Photo_Editor
         }
 
         async Task DoSomething(object sender,
-        TreeNodeMouseClickEventArgs e)
+        TreeViewEventArgs e)
         {
             //Start background thread
             await Task.Run(() =>
@@ -186,7 +183,7 @@ namespace Photo_Editor
             rootFolder = folderBrowserDialog.SelectedPath;
             PopulateTreeView(rootFolder);
             treeView1.ExpandAll();
-
         }
+
     }
 }
