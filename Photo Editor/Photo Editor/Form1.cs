@@ -107,16 +107,19 @@ namespace Photo_Editor
                     // DON'T USE Image.FromFile IT WILL CAUSE ISSUES FOR EXTRA CREDIT
                     Invoke((Action)delegate ()
                     {
-                        imageList1.Images.Add(Image.FromFile(file.FullName));
-                        imageListSmall.Images.Add(Image.FromFile(file.FullName));
-                        imageListLarge.Images.Add(Image.FromFile(file.FullName));
+                        Image newImage = Image.FromFile(file.FullName);
+                        newImage.Tag = file.FullName;
+                        imageList1.Images.Add(newImage);
+                        imageListSmall.Images.Add(newImage);
+                        imageListLarge.Images.Add(newImage);
                     });
                     //Shows photo in imagebox
                     item = new ListViewItem(file.Name, i);
                     subItems = new ListViewItem.ListViewSubItem[]
                         { new ListViewItem.ListViewSubItem(item, file.CreationTime.ToString()),
-                new ListViewItem.ListViewSubItem(item,
-                (file.Length/1024) + " KB")};
+                          new ListViewItem.ListViewSubItem(item,
+                        (file.Length/1024) + " KB")};
+                    item.Tag = file.FullName;
 
                     item.SubItems.AddRange(subItems);
                     Invoke((Action)delegate ()
@@ -143,7 +146,6 @@ namespace Photo_Editor
             detailsToolStripMenuItem.Checked = true;
             smallToolStripMenuItem.Checked = false;
             largeToolStripMenuItem.Checked = false;
-            //dkhjsfdbjfdskn
         }
 
         private void SmallToolStripMenuItem_Click(object sender, EventArgs e)
@@ -168,7 +170,7 @@ namespace Photo_Editor
         {
 
             AboutBox1 box = new AboutBox1();
-            box.Show();
+            box.ShowDialog();
         }
         private void ExitToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
@@ -177,16 +179,32 @@ namespace Photo_Editor
 
         private void LocateOnDiskToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            Process.Start(rootFolder);
+            if(listView1.FocusedItem != null)
+            {
+                //Code by Mahmoud Al-Qudsi and zwcloud -https://stackoverflow.com/questions/13680415/how-to-open-explorer-with-a-specific-file-selected
+                string filePath = listView1.FocusedItem.Tag.ToString();
+                filePath = System.IO.Path.GetFullPath(filePath);
+                System.Diagnostics.Process.Start("explorer.exe", string.Format("/select,\"{0}\"", filePath));            
+            }
+            else
+            {
+                string message = "First select and image, then choose this option to see it's location on disk.";
+                string title = "No Image Selected";
+                MessageBoxButtons buttons = MessageBoxButtons.OK;
+                MessageBox.Show(message, title, buttons, MessageBoxIcon.Information);
+            }
         }
 
         private void SelectRootFolderToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.ShowDialog();
-            rootFolder = folderBrowserDialog.SelectedPath;
-            PopulateTreeView(rootFolder);
-            treeView1.ExpandAll();
+
+            if(folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                rootFolder = folderBrowserDialog.SelectedPath;
+                PopulateTreeView(rootFolder);
+                treeView1.ExpandAll();
+            }
         }
 
     }
