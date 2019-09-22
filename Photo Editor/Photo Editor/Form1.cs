@@ -188,6 +188,7 @@ namespace Photo_Editor
             }
             else
             {
+                //Send out a message box to tell user what to do
                 string message = "First select and image, then choose this option to see it's location on disk.";
                 string title = "No Image Selected";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
