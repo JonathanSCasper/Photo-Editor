@@ -1,5 +1,6 @@
 # Photo-Editor
 
+https://github.com/JonathanSCasper/Photo-Editor
 
 Description: This program finds all JPEG photos in the user's Pictures folder and displays them in a window. The user can change the viewing size of the photos, as well as edit each photo individually by changing the brightness, color, and even inverting the image!
 
