@@ -19,23 +19,19 @@ namespace derp
             InitializeComponent();
         }
 
+        public void progressDialogBox_UpdateProgress(int progress)
+        {
+            transformProgressBar.Value = progress;
+            if (transformProgressBar.Value == 100)
+            {
+                this.Close();
+            }
+        }
+
         private void cancelButton_Click(object sender, EventArgs e)
         {
             cancelTransform();
             this.Close();
-        }
-        public void progressDialogBox_UpdateProgress(int progress)
-        {
-            //Invoke((Action)delegate ()
-            //{
-
-                transformProgressBar.Value = progress;
-                if (transformProgressBar.Value == 100)
-                {
-                    this.Close();
-                }
-            //});
-
         }
     }
 }

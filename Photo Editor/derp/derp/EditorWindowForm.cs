@@ -17,7 +17,7 @@ namespace derp
     public partial class EditorWindowForm : Form
     {
         private CancellationTokenSource cancellationTokenSource;
-        public delegate void UpdateProgressEvent(int progress);
+        public delegate void UpdateProgressEvent(int totalProgress);
         public event UpdateProgressEvent updateProgress;
         private Bitmap pictureBoxBitmap;
         private int totalProgress;
@@ -28,6 +28,13 @@ namespace derp
             pictureBox.LoadAsync();
             pictureBoxBitmap = new Bitmap(pictureBox.Image);
         }
+
+        public void assignBitmap(Bitmap transformedBitmap)
+        {
+            pictureBox.Image = transformedBitmap;
+            pictureBoxBitmap = (Bitmap)pictureBox.Image;
+        }
+
         public EditorWindowForm()
         {
             InitializeComponent();
@@ -37,35 +44,26 @@ namespace derp
 
         private async void brightnessBar_MouseCaptureChanged(object sender, EventArgs e)
         {
-            ProgressDialogBox progress = new ProgressDialogBox();
-            this.updateProgress += progress.progressDialogBox_UpdateProgress;
-            progress.cancelTransform += editor_CancelTransform;
-            progress.Show();
-            progress.Refresh();
-            //this.Enabled = false;
-            Bitmap transformedBitmap = await changeBrightness(progress);
-            if (transformImage)
-            {
-                pictureBoxBitmap = transformedBitmap;
-            }
-            this.Enabled = true;
+            this.Enabled = false;
             this.BringToFront();
-            transformImage = true;
-        }
-
-        private async Task<Bitmap> changeBrightness(ProgressDialogBox progress)
-        {
-            cancellationTokenSource = new CancellationTokenSource();
-            Bitmap newBitMap = pictureBoxBitmap;
-            pictureBoxBitmap = new Bitmap(pictureBox.Image);
-            //variables used to keep track of progress
-            int totalPixels = pictureBoxBitmap.Height * pictureBoxBitmap.Width;
-            int onePercent = totalPixels / 100;
-            int count = 0;
             int amount = Convert.ToInt32(2 * (50 - brightnessBar.Value) * 0.01 * 255);
-
             await Task.Run(() =>
             {
+                ProgressDialogBox progress = new ProgressDialogBox();
+                updateProgress += progress.progressDialogBox_UpdateProgress;
+                progress.cancelTransform += editor_CancelTransform;
+                progress.Show();
+                progress.Refresh();
+
+                cancellationTokenSource = new CancellationTokenSource();
+                Bitmap newBitMap = pictureBoxBitmap;
+                pictureBoxBitmap = new Bitmap(pictureBox.Image);
+                //variables used to keep track of progress
+                int totalPixels = pictureBoxBitmap.Height * pictureBoxBitmap.Width;
+                int onePercent = totalPixels / 100;
+                int count = 0;
+
+
                 for (int y = 0; y < pictureBoxBitmap.Height; y++)
                 {
                     for (int x = 0; x < pictureBoxBitmap.Width; x++)
@@ -113,7 +111,7 @@ namespace derp
                                 updateProgress.Invoke(totalProgress);
                             }
                         }
-                        if(cancellationTokenSource.IsCancellationRequested)
+                        if (cancellationTokenSource.IsCancellationRequested)
                         {
                             break;
                         }
@@ -123,49 +121,50 @@ namespace derp
                         break;
                     }
                 }
+                //only transform if cancellation wasn't requested
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    pictureBox.Image = pictureBoxBitmap;
+                    totalProgress = 0;
+                }
             });
-            pictureBox.Image = pictureBoxBitmap;
-            totalProgress = 0;
-            return newBitMap;
-        }
-
-        private async void invertButton_Click(object sender, EventArgs e)
-        {
-            ProgressDialogBox progress = new ProgressDialogBox();
-            updateProgress += new UpdateProgressEvent(progress.progressDialogBox_UpdateProgress);
-            progress.Show();
-            progress.Refresh();
-            this.Enabled = false;
-            pictureBoxBitmap = await Task_InvertColors(progress);
             this.Enabled = true;
             this.BringToFront();
             transformImage = true;
         }
 
-        private async Task<Bitmap> Task_InvertColors(ProgressDialogBox progress)
+        private async void invertButton_Click(object sender, EventArgs e)
         {
-            cancellationTokenSource = new CancellationTokenSource();
-            //variables used to keep track of progress
-            int totalPixels = pictureBoxBitmap.Height * pictureBoxBitmap.Width;
-            int onePercent = totalPixels / 100;
-            int count = 0;
-
-            //Code by Frank McCown https://sites.harding.edu/fmccown/classes/comp4450-f19/Photo%20Editor.pdf
-            Bitmap newBitMap = pictureBoxBitmap;
-            pictureBoxBitmap = new Bitmap(pictureBox.Image);
-
+            this.Enabled = false;
+            this.BringToFront();
+            ProgressDialogBox progress = new ProgressDialogBox();
+            updateProgress += progress.progressDialogBox_UpdateProgress;
+            progress.cancelTransform += editor_CancelTransform;
+            progress.Show();
+            progress.Refresh();
             await Task.Run(() =>
             {
-                for (int y = 0; y < pictureBoxBitmap.Height; y++)
+                cancellationTokenSource = new CancellationTokenSource();
+                //variables used to keep track of progress
+
+                pictureBoxBitmap = (Bitmap)pictureBox.Image;
+                Bitmap newBitmap = pictureBoxBitmap;
+                int totalPixels = newBitmap.Height * newBitmap.Width;
+                int onePercent = totalPixels / 100;
+                int count = 0;
+
+
+                //Code by Frank McCown https://sites.harding.edu/fmccown/classes/comp4450-f19/Photo%20Editor.pdf
+                for (int y = 0; y < newBitmap.Height; y++)
                 {
-                    for (int x = 0; x < pictureBoxBitmap.Width; x++)
+                    for (int x = 0; x < newBitmap.Width; x++)
                     {
-                        Color color = pictureBoxBitmap.GetPixel(x, y);
+                        Color color = newBitmap.GetPixel(x, y);
                         int newRed = Math.Abs(color.R - 255);
                         int newGreen = Math.Abs(color.G - 255);
                         int newBlue = Math.Abs(color.B - 255);
                         Color newColor = Color.FromArgb(newRed, newGreen, newBlue);
-                        pictureBoxBitmap.SetPixel(x, y, newColor);
+                        newBitmap.SetPixel(x, y, newColor);
                         count++;
                         if (count % onePercent == 0)
                         {
@@ -175,7 +174,7 @@ namespace derp
                             }
                             updateProgress?.Invoke(totalProgress);
                         }
-                        if(cancellationTokenSource.IsCancellationRequested)
+                        if (cancellationTokenSource.IsCancellationRequested)
                         {
                             break;
                         }
@@ -185,64 +184,82 @@ namespace derp
                         break;
                     }
                 }
+                //only transform if cancellation wasn't requested
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    assignBitmap(newBitmap);
+                    totalProgress = 0;
+                }
             });
-            pictureBox.Image = pictureBoxBitmap;
-            totalProgress = 0;
-            return newBitMap;
+
+            this.Enabled = true;
+            this.BringToFront();
+            transformImage = true;
         }
+
 
         private async void colorButton_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = tintColorDialog.ShowDialog();
             if (dialogResult == DialogResult.OK)
             {
-                ProgressDialogBox progress = new ProgressDialogBox();
-                this.updateProgress += progress.progressDialogBox_UpdateProgress;
-                progress.Show();
-                progress.Refresh();
                 this.Enabled = false;
-                pictureBoxBitmap = await Task_TintColors(progress);
-                this.Enabled = true;
-                transformImage = true;
-            }
-        }
-
-        private async Task<Bitmap> Task_TintColors(ProgressDialogBox progress)
-        {
-            Bitmap newBitMap = pictureBoxBitmap;
-            pictureBoxBitmap = new Bitmap(pictureBox.Image);
-            Color tintColor = tintColorDialog.Color;
-            //variables used to keep track of progress
-            int totalPixels = pictureBoxBitmap.Height * pictureBoxBitmap.Width;
-            int onePercent = totalPixels / 100;
-            int count = 0;
-
-            for (int y = 0; y < pictureBoxBitmap.Height; y++)
-            {
-                for (int x = 0; x < pictureBoxBitmap.Width; x++)
+                this.BringToFront();
+                await Task.Run(() =>
                 {
-                    if (transformImage)
-                    {
-                        Color color = pictureBoxBitmap.GetPixel(x, y);
-                        float rgbPercentage = (float)((color.R + color.G + color.B) / 3) / 255;
-                        int newRed = (int)((int)tintColor.R * rgbPercentage);
-                        int newGreen = (int)((int)tintColor.G * rgbPercentage);
-                        int newBlue = (int)((int)tintColor.B * rgbPercentage);
+                    ProgressDialogBox progress = new ProgressDialogBox();
+                    this.updateProgress += progress.progressDialogBox_UpdateProgress;
+                    progress.Show();
+                    progress.Refresh();
 
-                        Color newColor = Color.FromArgb(newRed, newGreen, newBlue);
-                        pictureBoxBitmap.SetPixel(x, y, newColor);
-                        count++;
-                        if (count % onePercent == 0)
+                    cancellationTokenSource = new CancellationTokenSource();
+                    //variables used to keep track of progress
+                    int totalPixels = pictureBoxBitmap.Height * pictureBoxBitmap.Width;
+                    int onePercent = totalPixels / 100;
+                    int count = 0;
+                    Bitmap newBitMap = pictureBoxBitmap;
+                    pictureBoxBitmap = new Bitmap(pictureBox.Image);
+                    Color tintColor = tintColorDialog.Color;
+
+                    for (int y = 0; y < pictureBoxBitmap.Height; y++)
+                    {
+                        for (int x = 0; x < pictureBoxBitmap.Width; x++)
                         {
-                            totalProgress++;
-                            updateProgress.Invoke(totalProgress);
+                            Color color = pictureBoxBitmap.GetPixel(x, y);
+                            float rgbPercentage = (float)((color.R + color.G + color.B) / 3) / 255;
+                            int newRed = (int)((int)tintColor.R * rgbPercentage);
+                            int newGreen = (int)((int)tintColor.G * rgbPercentage);
+                            int newBlue = (int)((int)tintColor.B * rgbPercentage);
+
+                            Color newColor = Color.FromArgb(newRed, newGreen, newBlue);
+                            pictureBoxBitmap.SetPixel(x, y, newColor);
+                            count++;
+                            if (count % onePercent == 0)
+                            {
+                                totalProgress++;
+                                updateProgress.Invoke(totalProgress);
+                            }
+                            if (cancellationTokenSource.IsCancellationRequested)
+                            {
+                                break;
+                            }
+                        }
+                        if (cancellationTokenSource.IsCancellationRequested)
+                        {
+                            break;
                         }
                     }
-                }
+                    //only transform if cancellation wasn't requested
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        pictureBox.Image = pictureBoxBitmap;
+                        totalProgress = 0;
+                    }
+                });
+                this.Enabled = true;
+                this.BringToFront();
+                transformImage = true;
             }
-            pictureBox.Image = pictureBoxBitmap;
-            totalProgress = 0;
-            return newBitMap;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
