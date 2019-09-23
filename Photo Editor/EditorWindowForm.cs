@@ -25,7 +25,7 @@ namespace Photo_Editor
             byte[] bytes = System.IO.File.ReadAllBytes(filename);
             MemoryStream ms = new MemoryStream(bytes);
             Image img = Image.FromStream(ms);
-            pictureBox.Image = img;
+            pictureBox.Image = new Bitmap(img);
             pictureBoxBitmap = new Bitmap(pictureBox.Image);
         }
 
@@ -274,7 +274,6 @@ namespace Photo_Editor
 
         private void saveButton_Click(object sender, EventArgs e)
         {
-            File.Delete(sourceFile);
             pictureBox.Image.Save(sourceFile, ImageFormat.Jpeg);
             Close();
         }
